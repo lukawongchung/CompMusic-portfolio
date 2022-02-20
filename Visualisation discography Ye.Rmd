@@ -1,0 +1,77 @@
+---
+title: "Visualisation discography Ye"
+author: "Luka Wong Chung"
+date: '2022-02-18'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+
+```{r}
+library(spotifyr)
+```
+
+```{r}
+college_dropout <- get_playlist_audio_features("", "2vtt0OdzJ0bug332TuRCOr")
+late_regestration <- get_playlist_audio_features("", "2UiJC8DaK3IL2QzJ9yFRKC")
+graduation <- get_playlist_audio_features("", "3CjsM5gcnTmX6bnD5HvGzS")
+heartbreak <- get_playlist_audio_features("", "2DI1sCSOuSZyVSahhkgL28")
+```
+```{r}
+first_era <-
+  bind_rows(
+    college_dropout %>% mutate(category = "The College Dropout"),
+    late_regestration %>% mutate(category = "Late Regestration"),
+    graduation %>% mutate(category = "Graduation"),
+    heartbreak %>% mutate(category = "808s & Heartbreak")
+  )
+```
+```{r}
+
+```
+
+```{r}
+first_era %>%
+  ggplot(aes(x = speechiness, fill = category)) +
+  geom_histogram(binwidth = 0.1, position = "dodge") +
+  labs(fill = "Album Name") + ggtitle("Amount of Speechiness Present in Each Song\nof Ye's First Three Studio Albums") +
+  theme(plot.title = element_text(lineheight=.8, face="bold"))
+```
+```{r}
+ye <- get_artist_audio_features("Kanye west")
+```
+```{r}
+ye %>%
+  ggplot(aes(x = reorder(album_name, order(album_release_year)), y = valence)) +
+  stat_summary(fun = mean, geom = "col") +
+  theme(axis.text.x = element_blank()) +
+  #theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  xlab("Albums") + ggtitle("The Valence of Ye's Albums Ordered from Old to New")
+```
+
+
+```{r}
+ye %>%
+  filter(album_name %in% c("The College Dropout", "808s & Heartbreak", "Yeezus", "The Life Of Pablo")) %>%
+  ggplot(aes(loudness, energy, color = album_name)) +
+  geom_point(size = 1) + labs(color = "Album Name", y = "Energy", x = "Loudness") +
+  ggtitle("Energy of Each Song of Ye's Most Innovative\nAlbums Against its Loudness")
+```
+
