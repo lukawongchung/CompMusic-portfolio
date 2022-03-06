@@ -10,18 +10,17 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-library(spotifyr)
-library(tidyverse)
 library(flexdashboard)
 library(readr)
-#library(leaflet)
 library(DT)
+library(tidyverse)
 library(lubridate)
 library(plotly)
-```
+library(spotifyr)
+library(compmus)
+library(gridExtra)
+library(grid)
 
-```{r, include=FALSE}
 college_dropout <- get_playlist_audio_features("", "2vtt0OdzJ0bug332TuRCOr")
 late_regestration <- get_playlist_audio_features("", "2UiJC8DaK3IL2QzJ9yFRKC")
 graduation <- get_playlist_audio_features("", "3CjsM5gcnTmX6bnD5HvGzS")
@@ -38,11 +37,146 @@ first_era <-
   )
 ```
 
+Chroma and timbre features {.storyboard}
+=========================================
+
+### Cepstogram of old vs new Ye track
+
+```{r}
+ttw <-
+  get_tidy_audio_analysis("4mmkhcEm1Ljy1U9nwtsxUo") %>% # Change URI.
+  compmus_align(bars, segments) %>%                     # Change `bars`
+  select(bars) %>%                                      #   in all three
+  unnest(bars) %>%                                      #   of these lines.
+  mutate(
+    pitches =
+      map(segments,
+        compmus_summarise, pitches,
+        method = "rms", norm = "euclidean"              # Change summary & norm.
+      )
+  ) %>%
+  mutate(
+    timbre =
+      map(segments,
+        compmus_summarise, timbre,
+        method = "rms", norm = "euclidean"              # Change summary & norm.
+      )
+  )
+
+moon <-
+  get_tidy_audio_analysis("7CC6UbCs4iGsePSzFxYxNn") %>% # Change URI.
+  compmus_align(bars, segments) %>%                     # Change `bars`
+  select(bars) %>%                                      #   in all three
+  unnest(bars) %>%                                      #   of these lines.
+  mutate(
+    pitches =
+      map(segments,
+        compmus_summarise, pitches,
+        method = "rms", norm = "euclidean"              # Change summary & norm.
+      )
+  ) %>%
+  mutate(
+    timbre =
+      map(segments,
+        compmus_summarise, timbre,
+        method = "rms", norm = "euclidean"              # Change summary & norm.
+      )
+  )
+
+ttw %>%
+  compmus_gather_timbre() %>%
+  ggplot(
+    aes(
+      x = start + duration / 2,
+      width = duration,
+      y = basis,
+      fill = value
+    )
+  ) +
+  geom_tile() +
+  labs(x = "Time (s)", y = NULL, fill = "Magnitude") +
+  scale_fill_viridis_c() +   
+  theme_classic() -> p1
+
+moon %>%
+  compmus_gather_timbre() %>%
+  ggplot(
+    aes(
+      x = start + duration / 2,
+      width = duration,
+      y = basis,
+      fill = value
+    )
+  ) +
+  geom_tile() +
+  labs(x = "Time (s)", y = NULL, fill = "Magnitude") +
+  scale_fill_viridis_c() +                              
+  theme_classic() -> p2
+
+grid.arrange(p1, p2, ncol = 2)
+```
+
+***
+
+(Need to find a way to put the plots together with titles)
+
+- The plot on the left shows the cepstogram of the single "Through The Wire" from Ye's first studio album "The College Dropout". With c01 being quite lit in comparison with the right cepstogram, it is evident that the overall loudness is greater. C02 shows that there are also some pretty "bright" parts which correspond with the choruses. Furthermore, the "strongness" of the track stays steady at an intermediate value along the entire track.
+
+- The second cepstogram is of the track "Moon" from Ye's tenth studio album "Donda". It shows that Ye's style has seriously changed over the years. All dimensions of the cepstogram except for the second (which corresponds to the track's "brightness") seem to be pretty low. You can clearly see that there are different parts of the song with different timbres, but these aren't divided into the classic "verse-chorus" scheme like it was with Ye's earlier music.
+
+### Timbre self-similarity matrix a-typical Ye song
+
+```{r}
+sight <-
+  get_tidy_audio_analysis("1gqkRc9WtOpnGIqxf2Hvzr") %>% # Change URI.
+  compmus_align(bars, segments) %>%                     # Change `bars`
+  select(bars) %>%                                      #   in all three
+  unnest(bars) %>%                                      #   of these lines.
+  mutate(
+    pitches =
+      map(segments,
+        compmus_summarise, pitches,
+        method = "rms", norm = "euclidean"              # Change summary & norm.
+      )
+  ) %>%
+  mutate(
+    timbre =
+      map(segments,
+        compmus_summarise, timbre,
+        method = "rms", norm = "euclidean"              # Change summary & norm.
+      )
+  )
+
+sight %>%
+  compmus_self_similarity(timbre, "cosine") %>% 
+  ggplot(
+    aes(
+      x = xstart + xduration / 2,
+      width = xduration,
+      y = ystart + yduration / 2,
+      height = yduration,
+      fill = d
+    )
+  ) +
+  geom_tile() +
+  coord_fixed() +
+  scale_fill_viridis_c(guide = "none") +
+  theme_classic() +
+  labs(x = "", y = "")
+```
+
+------------------------------------------------------------------------
+
+Here you have the timbre self-similarity matrix of the track "On Sight" from one of Ye's most experimental albums "Yeezus". The track by itself is also very experimental. I would have thought that its timbre would be quite the same over the song, with the exception of a little "interlute" around 77 seconds which is very different from the rest of the song. I would have thought this would have been very clear from the self-similarity matrix so I'm surprised that I can not really find it in the matrix.
+
+Spotify feature plots {.storyboard}
+=========================================
+
 ### A technical deep dive into Ye's discography
 
 In this repository I work on creating my portfolio for the optional course "Computational Musicology" for my bachelors program "Artificial Intelligence"
 
-The corpus that I chose to use is a Spotify playlist that I made which consists of the entire (released) discography of the American artist Ye, formerly known as Kanye West. I think Ye's discography is particularly interesting for reasearch  because it is very diverse. Throughout the almost 20 years in which Ye has been releasing music, his music has seen many style changes. From his classic debute album "The College Dropout" to his more experimental albums like "Yeezus", Ye has been developing his style throughout the years, which has made him one of the most popular artists of the 21th century. All this makes for great points of comparison. By comparing Ye's music, I hope to find changes in a lot of features that spotify's web API offers. I think throughout the years, Ye's music has gotten more instrumental and I think that there are clear albums that show a change in his music over time, like "808s & Heartbreak" as well as "Yeezus". Something that probably has already been clear from what I've written above, "Yeezus" is an album that stands out a lot in Ye's discography. Tracks like "On Sight" are very experimental and different from most of Ye's tracks. This is probably shown with it having a higher overall energy, as well as having a very different timbre from most songs by being extremely "robotic", by lack of a better word. Another album that stands out in my opinion and is quite innovative is the album "KIDS SEE GHOSTS".
+The corpus that I chose to use is a Spotify playlist that I made which consists of the entire (released) discography of the American artist Ye, formerly known as Kanye West. I think Ye's discography is particularly interesting for reasearch because it is very diverse. Throughout the almost 20 years in which Ye has been releasing music, his music has seen many style changes. From his classic debute album "The College Dropout" to his more experimental albums like "Yeezus", Ye has been developing his style throughout the years, which has made him one of the most popular artists of the 21th century. All this makes for great points of comparison. By comparing Ye's music, I hope to find changes in a lot of features that spotify's web API offers. I think throughout the years, Ye's music has gotten more instrumental and I think that there are clear albums that show a change in his music over time, like "808s & Heartbreak" as well as "Yeezus". Something that probably has already been clear from what I've written above, "Yeezus" is an album that stands out a lot in Ye's discography. Tracks like "On Sight" are very experimental and different from most of Ye's tracks. This is probably shown with it having a higher overall energy, as well as having a very different timbre from most songs by being extremely "robotic", by lack of a better word. Another album that stands out in my opinion and is quite innovative is the album "KIDS SEE GHOSTS".
 
 ### Speechiness of Ye's first four studio albums
 
@@ -54,7 +188,7 @@ first_era %>%
   theme(plot.title = element_text(lineheight=.8, face="bold"))
 ```
 
-***
+------------------------------------------------------------------------
 
 The "speechiness" plot shows how all songs from the first three albums score in the spotify feature "speechiness". I think the plot very interesting because it clearly shows how Ye's album 808's & Heartbreak is different from his first three albums, which most people would agree with. Ye started singing more from this album forward, in contrast to his first three albums, where he primarilly just rapped.
 
@@ -70,7 +204,7 @@ ye %>%
   xlab("Albums") + ggtitle("The Valence of Ye's Albums Ordered from Old to New")
 ```
 
-***
+------------------------------------------------------------------------
 
 The "valence" plot shows the average overall musical positiveness of each of Ye's albums ordered from old to new. I think this plot is interesting because it shows a clear steady decline in the positiveness of Ye's albums. Aperantly, as Ye got more famous, his music got more negative. (I haven't found a way to display the names of the albums in a clean and pretty way yet)
 
@@ -85,8 +219,6 @@ ye %>%
   theme(plot.title = element_text(lineheight=.8, face="bold"))
 ```
 
-***
+------------------------------------------------------------------------
 
 Lastly, the "energy_loudness" plot shows the energy of each song from four of Ye's most innovative albums against its loudness. Here it clearly shows that energy and loudness correlate but it is also interesting to see how some of the albums are more centered around a specific place on the plot and others are more spread out.
-
-
