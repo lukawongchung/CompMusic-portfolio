@@ -5,6 +5,8 @@ date: '2022-02-18'
 output: 
   flexdashboard::flex_dashboard:
   orientation: columns
+  vertical_layout: fill
+  storyboard: true
 ---
 
 ```{r setup, include=FALSE}
@@ -12,17 +14,13 @@ knitr::opts_chunk$set(echo = TRUE)
 library(spotifyr)
 library(tidyverse)
 library(flexdashboard)
+library(readr)
+#library(leaflet)
+library(DT)
+library(lubridate)
+library(plotly)
 ```
 
-Column
------------------------------------------------------------------------
-### Introduction
-In this repository I work on creating my portfolio for the optional course "Computational Musicology" for my bachelors program "Artificial Intelligence"
-
-The corpus that I chose to use is a Spotify playlist that I made which consists of the entire (released) discography of the American artist Ye, formerly known as Kanye West. I think Ye's discography is particularly interesting for reasearch  because it is very diverse. Throughout the almost 20 years in which Ye has been releasing music, his music has seen many style changes. From his classic debute album "The College Dropout" to his more experimental albums like "Yeezus", Ye has been developing his style throughout the years, which has made him one of the most popular artists of the 21th century. All this makes for great points of comparison. By comparing Ye's music, I hope to find changes in a lot of features that spotify's web API offers. I think throughout the years, Ye's music has gotten more instrumental and I think that there are clear albums that show a change in his music over time, like "808s & Heartbreak" as well as "Yeezus". Something that probably has already been clear from what I've written above, "Yeezus" is an album that stands out a lot in Ye's discography. Tracks like "On Sight" are very experimental and different from most of Ye's tracks. This is probably shown with it having a higher overall energy, as well as having a very different timbre from most songs by being extremely "robotic", by lack of a better word. Another album that stands out in my opinion and is quite innovative is the album "KIDS SEE GHOSTS".
-
-Column {.tabset}
------------------------------------------------------------------------
 ```{r, include=FALSE}
 college_dropout <- get_playlist_audio_features("", "2vtt0OdzJ0bug332TuRCOr")
 late_regestration <- get_playlist_audio_features("", "2UiJC8DaK3IL2QzJ9yFRKC")
@@ -39,8 +37,16 @@ first_era <-
     heartbreak %>% mutate(category = "808s & Heartbreak")
   )
 ```
-### Chart 1
-```{r, echo=FALSE}
+
+### A technical deep dive into Ye's discography
+
+In this repository I work on creating my portfolio for the optional course "Computational Musicology" for my bachelors program "Artificial Intelligence"
+
+The corpus that I chose to use is a Spotify playlist that I made which consists of the entire (released) discography of the American artist Ye, formerly known as Kanye West. I think Ye's discography is particularly interesting for reasearch  because it is very diverse. Throughout the almost 20 years in which Ye has been releasing music, his music has seen many style changes. From his classic debute album "The College Dropout" to his more experimental albums like "Yeezus", Ye has been developing his style throughout the years, which has made him one of the most popular artists of the 21th century. All this makes for great points of comparison. By comparing Ye's music, I hope to find changes in a lot of features that spotify's web API offers. I think throughout the years, Ye's music has gotten more instrumental and I think that there are clear albums that show a change in his music over time, like "808s & Heartbreak" as well as "Yeezus". Something that probably has already been clear from what I've written above, "Yeezus" is an album that stands out a lot in Ye's discography. Tracks like "On Sight" are very experimental and different from most of Ye's tracks. This is probably shown with it having a higher overall energy, as well as having a very different timbre from most songs by being extremely "robotic", by lack of a better word. Another album that stands out in my opinion and is quite innovative is the album "KIDS SEE GHOSTS".
+
+### Speechiness of Ye's first four studio albums
+
+```{r}
 first_era %>%
   ggplot(aes(x = speechiness, fill = category)) +
   geom_histogram(binwidth = 0.1, position = "dodge") +
@@ -48,8 +54,13 @@ first_era %>%
   theme(plot.title = element_text(lineheight=.8, face="bold"))
 ```
 
-### Chart 2
-```{r, echo=FALSE}
+***
+
+The "speechiness" plot shows how all songs from the first three albums score in the spotify feature "speechiness". I think the plot very interesting because it clearly shows how Ye's album 808's & Heartbreak is different from his first three albums, which most people would agree with. Ye started singing more from this album forward, in contrast to his first three albums, where he primarilly just rapped.
+
+### A steacy decline of positiveness
+
+```{r}
 ye %>%
   ggplot(aes(x = reorder(album_name, order(album_release_year)), y = valence)) +
   stat_summary(fun = mean, geom = "col") +
@@ -59,8 +70,13 @@ ye %>%
   xlab("Albums") + ggtitle("The Valence of Ye's Albums Ordered from Old to New")
 ```
 
-### Chart 3
-```{r, echo=FALSE}
+***
+
+The "valence" plot shows the average overall musical positiveness of each of Ye's albums ordered from old to new. I think this plot is interesting because it shows a clear steady decline in the positiveness of Ye's albums. Aperantly, as Ye got more famous, his music got more negative. (I haven't found a way to display the names of the albums in a clean and pretty way yet)
+
+### The correlation of energy and loudness
+
+```{r}
 ye %>%
   filter(album_name %in% c("The College Dropout", "808s & Heartbreak", "Yeezus", "The Life Of Pablo")) %>%
   ggplot(aes(loudness, energy, color = album_name)) +
@@ -69,16 +85,8 @@ ye %>%
   theme(plot.title = element_text(lineheight=.8, face="bold"))
 ```
 
-## {-}
+***
 
-### Conclusion
-#### Chart 1
-The "speechiness" plot shows how all songs from the first three albums score in the spotify feature "speechiness". I think the plot very interesting because it clearly shows how Ye's album 808's & Heartbreak is different from his first three albums, which most people would agree with. Ye started singing more from this album forward, in contrast to his first three albums, where he primarilly just rapped.
-
-#### Chart 2
-The "valence" plot shows the average overall musical positiveness of each of Ye's albums ordered from old to new. I think this plot is interesting because it shows a clear steady decline in the positiveness of Ye's albums. Aperantly, as Ye got more famous, his music got more negative. (I haven't found a way to display the names of the albums in a clean and pretty way yet)
-
-#### Chart 3
 Lastly, the "energy_loudness" plot shows the energy of each song from four of Ye's most innovative albums against its loudness. Here it clearly shows that energy and loudness correlate but it is also interesting to see how some of the albums are more centered around a specific place on the plot and others are more spread out.
 
 
