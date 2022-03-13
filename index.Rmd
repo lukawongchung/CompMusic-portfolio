@@ -189,7 +189,9 @@ grid.arrange(chordgram_ff, chordgram_ng, ncol = 2)
 ***
 
 (Still need to find a way to display the two plots with titles in a way that they don't look this squeezed up)
+
 - The plot on the left shows the chordogram of one of Ye's singles, FourFiveSeconds, collaborating with Rihanna and Paul McCartney. The track is a-typical to the rest of Ye's discography in the sense that the instrumentals basically just consist of some acoustic guitar and an organ during the bridge part of the song. You can clearly see that this bridge part starts around 85 seconds using some different chords than the rest of the song. From the chordogram, E-minor and A-major are clearly chords that are being used in the bridge part of the song (even though I can only display the plots squeezed up like this for now). For the rest of the song, it becomes harder to distinguish specific chords, but some patterns seem to be evident.
+
 - For the plot on the left, I decided to use a track that is way more "hip-hop like", consisting of way more drums and less clear chord progressions. I was wondering if it would be harder to see a clear pattern in a chordogram of a rap song like this. This seemed to be the case indeed. I couldn't find any real patterns at all here.
 
 ### Cepstogram of old vs new Ye track
