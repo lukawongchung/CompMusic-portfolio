@@ -20,6 +20,7 @@ library(spotifyr)
 library(compmus)
 library(gridExtra)
 library(grid)
+library(shiny)
 
 college_dropout <- get_playlist_audio_features("", "2vtt0OdzJ0bug332TuRCOr")
 late_regestration <- get_playlist_audio_features("", "2UiJC8DaK3IL2QzJ9yFRKC")
@@ -39,6 +40,39 @@ first_era <-
 
 Chroma and timbre features {.storyboard}
 =========================================
+
+### Tempograms
+
+```{r}
+four_five3 <- get_tidy_audio_analysis("78TTtXnFQPzwqlbtbwqN0y")
+
+ff1 <- four_five3 %>%
+  tempogram(window_size = 8, hop_size = 1, cyclic = FALSE) %>%
+  ggplot(aes(x = time, y = bpm, fill = power)) +
+  geom_raster() +
+  scale_fill_viridis_c(guide = "none") +
+  labs(x = "Time (s)", y = "Tempo (BPM)") +
+  theme_classic()
+
+ff2 <- four_five3 %>%
+  tempogram(window_size = 8, hop_size = 1, cyclic = TRUE) %>%
+  ggplot(aes(x = time, y = bpm, fill = power)) +
+  geom_raster() +
+  scale_fill_viridis_c(guide = "none") +
+  labs(x = "Time (s)", y = "Tempo (BPM)") +
+  theme_classic()
+```
+```{r}
+grid.arrange(ff1, ff2, ncol = 2, widths=c(2,2))
+```
+
+***
+
+Before implementing a spectogram to my portfolio, I wanted to get some more information about what the tracks were in my corpus with the highest and the lowest tempo. I was surprised to see that, according to spotify's API, the track with the highest tempo was "FourFiveSeconds", from Ye, Rihanna and Paul McCartney. I was surprised because this is actually an outlier from the rest of the corpus since the instrumentals consist of primarilly guitar chords which seem to be played in a rather calm tempo. The tempo value given by spotify's API was around 206 bpm which is way higher than I expected. However, when I measured the tempo myself, I got to a value of 103 bpm, which is exactly half of what Spotify found. Here it seems that spotify measured the half beats as a whole, doubling the actual tempo. 
+
+The tempogram on the left shows how the song its tempo stays around 206 bpm for the entire duration of the song (exept for one part which I will adress later on). This is when I set the parameter "cyclic" to be FALSE for the tempogram function. However, What is interesting is that the tempogram on the left shows the right tempo (around 103 bpm). For this tempogram, I set the parameter "cyclic" to be true. (EXPLAIN WHY THIS IS!)
+
+The other interesting thing that this tempogram shows is the part of the song from about 85 seconds to about 120 seconds. In the tempogram, it seems to be that the tempo is all over the place. There is not a clear tempo present at all. In reality, the tempo doesn't change for this part of the song, but spotify's algorithm doesn't seem to be able to actually estimate any tempo at this part. In this part, the rhythmic guitar gets replaced for an organ without any percussion. This probably makes it a lot harder for the tempo-estimation algorithm to estimate the right tempo. 
 
 ### Chordogram of singing vs rapping song
 
@@ -183,7 +217,7 @@ chordgram_ng <- new_god %>%
   theme_minimal() +
   labs(x = "Time (s)", y = "")
 
-grid.arrange(chordgram_ff, chordgram_ng, ncol = 2)
+grid.arrange(chordgram_ff, chordgram_ng, ncol = 2, widths=c(2,2))
 ```
 
 ***
@@ -192,7 +226,7 @@ grid.arrange(chordgram_ff, chordgram_ng, ncol = 2)
 
 - The plot on the left shows the chordogram of one of Ye's singles, FourFiveSeconds, collaborating with Rihanna and Paul McCartney. The track is a-typical to the rest of Ye's discography in the sense that the instrumentals basically just consist of some acoustic guitar and an organ during the bridge part of the song. You can clearly see that this bridge part starts around 85 seconds using some different chords than the rest of the song. From the chordogram, E-minor and A-major are clearly chords that are being used in the bridge part of the song (even though I can only display the plots squeezed up like this for now). For the rest of the song, it becomes harder to distinguish specific chords, but some patterns seem to be evident.
 
-- For the plot on the left, I decided to use a track that is way more "hip-hop like", consisting of way more drums and less clear chord progressions. I was wondering if it would be harder to see a clear pattern in a chordogram of a rap song like this. This seemed to be the case indeed. I couldn't find any real patterns at all here.
+- For the plot on the right, I decided to use a track that is way more "hip-hop like", consisting of way more drums and less clear chord progressions. I was wondering if it would be harder to see a clear pattern in a chordogram of a rap song like this. This seemed to be the case indeed. I couldn't find any real patterns at all here.
 
 ### Cepstogram of old vs new Ye track
 
@@ -267,7 +301,7 @@ moon %>%
   scale_fill_viridis_c() +                              
   theme_classic() -> p2
 
-grid.arrange(p1, p2, ncol = 2)
+grid.arrange(p1, p2, ncol = 2, widths=c(2,2))
 ```
 
 ***
