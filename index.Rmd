@@ -14,6 +14,7 @@ library(flexdashboard)
 library(readr)
 library(DT)
 library(tidyverse)
+library(tidymodels)
 library(lubridate)
 library(plotly)
 library(spotifyr)
@@ -21,6 +22,8 @@ library(compmus)
 library(gridExtra)
 library(grid)
 library(shiny)
+library(ggdendro)
+library(heatmaply)
 
 college_dropout <- get_playlist_audio_features("", "2vtt0OdzJ0bug332TuRCOr")
 late_regestration <- get_playlist_audio_features("", "2UiJC8DaK3IL2QzJ9yFRKC")
@@ -37,6 +40,120 @@ first_era <-
     heartbreak %>% mutate(category = "808s & Heartbreak")
   )
 ```
+
+Dendrograms {.storyboard}
+=========================================
+
+### Dendrograms
+
+```{r, include=FALSE}
+get_conf_mat <- function(fit) {
+  outcome <- .get_tune_outcome_names(fit)
+  fit %>% 
+    collect_predictions() %>% 
+    conf_mat(truth = outcome, estimate = .pred_class)
+}  
+
+get_pr <- function(fit) {
+  fit %>% 
+    conf_mat_resampled() %>% 
+    group_by(Prediction) %>% mutate(precision = Freq / sum(Freq)) %>% 
+    group_by(Truth) %>% mutate(recall = Freq / sum(Freq)) %>% 
+    ungroup() %>% filter(Prediction == Truth) %>% 
+    select(class = Prediction, precision, recall)
+}  
+```
+```{r, include=FALSE}
+all_ye <-
+  get_playlist_audio_features("lwongchung", "3SJiQFddTSBFLrdshH5tfi") %>%
+  add_audio_analysis() %>%
+  mutate(
+    segments = map2(segments, key, compmus_c_transpose),
+    pitches =
+      map(segments,
+        compmus_summarise, pitches,
+        method = "mean", norm = "manhattan"
+      ),
+    timbre =
+      map(
+        segments,
+        compmus_summarise, timbre,
+        method = "mean"
+      )
+  ) %>%
+  mutate(pitches = map(pitches, compmus_normalise, "clr")) %>%
+  mutate_at(vars(pitches, timbre), map, bind_rows) %>%
+  unnest(cols = c(pitches, timbre))
+
+# subset_all_ye <- all_ye[sample(1:nrow(all_ye), 30,
+#    replace=FALSE),]
+all_ye_specific <- all_ye %>%
+  filter(track.name %in% c("Moon", "Late", "Jesus Is Lord", "Everything I Am", "Hands On", "Big Brother", "Life Of The Party (with André 3000)", "The Joy", "Celebration", "Pinocchio Story", "4th Dimension", "Blood On The Leaves","Hell Of A Life", "Yikes", "Follow God", "Lift Off", "Famous", "Heavy Hitters - Dirty", "I'm In It", "Crack Music"))
+# all_ye_specific <- all_ye %>%
+#   filter(track.name %in% c("We Don't Care", "Graduation Day", "All Falls Down", "I'll Fly Away", "Spaceship", "Jesus Walks", "Never Let Me Down", "Get Em High", "The New Workout Plan", "Slow Jamz", "Breathe In Breath Out", "School Spirit","Two Words", "Through The Wire", "Family Business", "Last Call", "Jail", "God Breathed", "Off The Grid", "Hurricane", "Praise God", "Jonah", "Ok Ok", "Junya", "Believe What I Say", "24", "Remote Control", "Moon", "Heaven And Hell", "Donda", "Keep My Spirit Alive", "Jesus Lord", "New Again", "Tell The Vision", "Lord I Need You", "Pure Souls", "Come To Life", "No Child Left Behind"))
+```
+```{r, include=FALSE}
+all_ye_juice <-
+  recipe(
+    track.name ~
+      danceability +
+      energy +
+      loudness +
+      speechiness +
+      acousticness +
+      instrumentalness +
+      liveness +
+      valence +
+      tempo +
+      duration +
+      C + `C#|Db` + D + `D#|Eb` +
+      E + `F` + `F#|Gb` + G +
+      `G#|Ab` + A + `A#|Bb` + B +
+      c01 + c02 + c03 + c04 + c05 + c06 +
+      c07 + c08 + c09 + c10 + c11 + c12,
+    # valence,
+    data = all_ye_specific
+  ) %>%
+  step_center(all_predictors()) %>%
+  step_scale(all_predictors()) %>% 
+  # step_range(all_predictors()) %>% 
+  prep(all_ye_specific %>% mutate(track.name = str_trunc(track.name, 40))) %>%
+  juice() %>%
+  column_to_rownames("track.name")
+```
+```{r, include=FALSE}
+all_ye_dist <- dist(all_ye_juice, method = "euclidean")
+```
+```{r}
+library(dendextend)
+# all_ye_dist %>% 
+#   hclust(method = "average") %>% # Try single, average, and complete.
+#   dendro_data() %>%
+#   ggdendrogram() %>%
+hc_ye <- hclust(all_ye_dist, method = "complete")
+ye_dend <- as.dendrogram(hc_ye)
+ye_dend_colored <- color_branches(ye_dend, h = 12)
+plot(ye_dend_colored)
+```
+
+***
+
+Last week we had to look at the tempo of the tracks in our corpus. This week I was interested to see whether I could extract some of the the tracks with the highest tempo, and some of the track with the lowest tempo, and see whether the clustering methods could make a clear division between the two. Unfortunately, this doesn't seem to have worked completely. The only three tracks that are clearly separated from the rest are "moon", "Pinocchio Story" and "Jesus Is Lord". I do think that it is interesting that these are in fact three of the tracks with the lowest tempo out of th corpus. These were also some of the tracks were there was no debate about the actual tempo. Many of the tracks that were labelled as having a low BPM could be interpreted as double-time, having double the tempo that spotify assigned to it. Another reason why it might be that some of the low-tempo tracks are clustered together with the high-tempo tracks is probably that there are, in fact, many other features taken into account when clustering apart from tempo. I did think that it would be interesting to see which of these features were most important for clustering certain tracks together so I also made a heatmap.
+
+### Heatmap
+
+```{r}
+heatmaply(
+  all_ye_juice,
+  hclustfun = hclust,
+  hclust_method = "average",  # Change for single, average, or complete linkage.
+  dist_method = "euclidean"
+)
+```
+
+***
+
+Looking at this heatmap, it seems that for the three tracks that were shown in blue in the dendrogram on the last slide are most likely clustered together because of some features that have a shared high value for these three tracks. These are a key of F#/Gb, the "speechiness" and also the timbre feature c06 seems to have a relatively high value for these tracks.
 
 Chroma and timbre features {.storyboard}
 =========================================
@@ -415,7 +532,7 @@ first_era %>%
 
 The "speechiness" plot shows how all songs from the first three albums score in the spotify feature "speechiness". I think the plot very interesting because it clearly shows how Ye's album 808's & Heartbreak is different from his first three albums, which most people would agree with. Ye started singing more from this album forward, in contrast to his first three albums, where he primarilly just rapped.
 
-### A steacy decline of positiveness
+### A steady decline of positiveness
 
 ```{r}
 level_order <- c('The College Dropout', 'Late Registration', 'Late Orchestration', 'Graduation', '808s & Heartbreak', 'My Beautiful Dark Twisted Fantasy', 'Watch The Throne', 'Watch The Throne (Deluxe)', 'Yeezus', 'The Life Of Pablo', 'ye', 'KIDS SEE GHOSTS', 'JESUS IS KING', 'Donda', 'Donda (Deluxe)')
