@@ -1,9 +1,10 @@
 ---
-title: "Visualisation discography Ye"
+title: "Computational Musicology Portfolio on Discography Ye"
 author: "Luka Wong Chung"
 date: '2022-02-18'
 output: 
   flexdashboard::flex_dashboard:
+    self_contained: false
     theme: 
       # version: 4
       # bootswatch: sandstone
@@ -16,7 +17,6 @@ output:
   orientation: columns
   vertical_layout: fill
   storyboard: true
-  self_contained: false
 ---
 
 ```{r setup, include=FALSE}
@@ -58,7 +58,7 @@ Introduction
 Column {data-width=600}
 -----------------------------------------------------------------------
 
-### A technical deep dive into Ye's discography
+### A Technical Deep Dive into Ye's Discography over the Years
 
 In this repository I work on creating my portfolio for the optional course "Computational Musicology" for my bachelors program "Artificial Intelligence"
 
@@ -73,10 +73,10 @@ Column {data-width=400}
 
 ![](ye_wallpaper.png)
 
-Spotify Feature Plots {.storyboard data-navmenu="Visualizations"}
+1. Spotify Feature Plots {.storyboard data-navmenu="Analysis"}
 =========================================
 
-### Speechiness of Ye's first four studio albums
+### Speechiness of Ye's First Four Studio Albums
 
 ```{r}
 library(plyr)
@@ -95,9 +95,9 @@ ggplotly(density_speech)
 
 ------------------------------------------------------------------------
 
-The "speechiness" plot shows how all songs from the first three albums score in the spotify feature "speechiness". I think the plot very interesting because it clearly shows how Ye's album 808's & Heartbreak is different from his first three albums, which most people would agree with. Ye started singing more from this album forward, in contrast to his first three albums, where he primarilly just rapped.
+The "speechiness" plot shows how all songs from the first three albums score in the spotify feature "speechiness". I think the plot very interesting because it clearly shows how Ye's fourth studio album "808's & Heartbreak" is different from his first three albums, which most people would agree with. Also you can see how the mean of the values for "speechiness" of Ye's thirth album "Graduation" is considerably higher than his first two albums. The latter is probably because it is considered that Graduation marked a departure from the soul-based sound of Ye's previous releases. For this album, Ye musically progressed to more anthemic compositions. However, as we have seen, the biggest change came with Ye's fourth studio album "808's & Heartbreak". This album was released the year after Ye's mother had passed away and he had also just put an end to his relationship with Alexis Phifer, who was his fiancée at the time. This all lead up to big style changes in Ye's music, featuring a sparse, electronic sound and vocals sung through an Auto-Tune processor. Where Ye had a tendency to rap more on his earlier albums because he didn't think that he could sing good enough, the use of Auto-Tune led up to a decrease in his use traditional rapping. Instead, he incorporated more singing, leading up to the big decrease in speechines in his songs.
 
-### A steady decline of positiveness
+### A Steady Decline in Positiveness
 
 ```{r}
 level_order <- c('The College Dropout', 'Late Registration', 'Late Orchestration', 'Graduation', '808s & Heartbreak', 'My Beautiful Dark Twisted Fantasy', 'Watch The Throne', 'Watch The Throne (Deluxe)', 'Yeezus', 'The Life Of Pablo', 'ye', 'KIDS SEE GHOSTS', 'JESUS IS KING', 'Donda', 'Donda (Deluxe)')
@@ -110,32 +110,39 @@ valence_plot <- ye %>%
   #theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
   xlab("Albums") + ggtitle("The Valence of Ye's Albums Ordered from Old to New")
 
-ggplotly(valence_plot)
+ggplotly(valence_plot) %>% 
+  layout(hoverlabel=list(bgcolor ="#ff9233"))
 ```
 
 ------------------------------------------------------------------------
 
-The "valence" plot shows the average overall musical positiveness of each of Ye's albums ordered from old to new. I think this plot is interesting because it shows a clear steady decline in the positiveness of Ye's albums. Aperantly, as Ye got more famous, his music got more negative. (I haven't found a way to display the names of the albums in a clean and pretty way yet)
+The "valence" plot shows the average overall musical positiveness of each of Ye's albums ordered from old to new. I think this plot is interesting because it shows a clear and steady decline in the musical positiveness of Ye's albums. Apparently, as Ye got more famous, his music got more negative. The first big decline in valence that we see is from the album "Late Registration" to "Late Orchestration". However, Late Orchestration is just a live version of Late Registration where the instrumentals are played by a live orchestra. Apparently, this makes the music sound less positive to Spotify's API. The positiveness of Late Registration and Graduation are almost the same, but the first really interesting finding is the big decline in positiveness for the album "808s and Heartbreak". As the title suggests, Ye was heartbroken at the time. With the previous plot, I described how Ye's mother had just passed away before the release of this album and he also just broke up with his fiancée at the time. As a listener, in some of the songs, you can really hear the pain that Ye must have gone through at the time. In "Pinocchio Story" for example he tears himself apart for his mistakes, blaming himself for his mother’s death and attacking his own life choices as the reasons he will never be happy.
 
-### The correlation of energy and loudness
+<iframe style="border-radius:12px" src="https://open.spotify.com/embed/track/6giHsGo1eSYZSXKdNwTC62?utm_source=generator" width="100%" height="80" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>
+
+After 808s & Heartbreak, you can see a slight increase in the valence of Ye's albums. However, after the release of "The Life Of Pablo", when Ye had decided to focus more on religion and god, interestingly enough the musical positiveness of his songs starts to decline again, getting to the lowest point with his latest album "Donda".
+
+### The Correlation of Energy and Loudness
 
 ```{r}
-ye %>%
+energy_loudnes <- ye %>%
   filter(album_name %in% c("The College Dropout", "808s & Heartbreak", "Yeezus", "The Life Of Pablo")) %>%
   ggplot(aes(loudness, energy, color = album_name)) +
   geom_point(size = 1) + labs(color = "Album Name", y = "Energy", x = "Loudness") +
   ggtitle("Energy of Each Song of Ye's Most Innovative\nAlbums Against its Loudness") +
   theme(plot.title = element_text(lineheight=.8, face="bold"))
+
+ggplotly(energy_loudnes)
 ```
 
 ------------------------------------------------------------------------
 
-Lastly, the "energy_loudness" plot shows the energy of each song from four of Ye's most innovative albums against its loudness. Here it clearly shows that energy and loudness correlate but it is also interesting to see how some of the albums are more centered around a specific place on the plot and others are more spread out.
+Lastly, the plot on the right shows the energy of each song from four of Ye's most innovative albums against its loudness. Here it clearly shows that energy and loudness correlate but it is also interesting to see how some of the albums are more centered around a specific place on the plot and others are more spread out. For example, you can clearly see how the tracks of the album "Yeezus" are in general loud and energetic, while "The College Dropout" seems to be more "spread out" over the diagonal axis.
 
-Structure analysis {.storyboard data-navmenu="Visualizations"}
+2. Structure Analysis {.storyboard data-navmenu="Analysis"}
 =========================================
 
-### Cepstogram of old vs new Ye track
+### Cepstogram of Old Ye Track: "Through The Wire"
 
 ```{r}
 ttw <-
@@ -208,20 +215,27 @@ moon %>%
   scale_fill_viridis_c() +                              
   theme_classic() -> p2
 
-grid.arrange(p1, p2, ncol = 2, widths=c(2,2))
+p1
+```
+
+***
+The plot on the left shows the cepstogram of the single "Through The Wire" from Ye's first studio album "The College Dropout". With c01 being pretty bright in comparison with the cepstogram that is shown in the following slide, it is evident that the overall loudness is greater. C02 shows that there are also some specific parts that are pretty bright, which correspond with the choruses. Furthermore, the "strongness" of the track stays steady at an intermediate value along the entire track.
+
+<iframe style="border-radius:12px" src="https://open.spotify.com/embed/track/4mmkhcEm1Ljy1U9nwtsxUo?utm_source=generator" width="100%" height="80" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>
+
+### Cepstogram of New Ye Track: "Moon"
+
+```{r}
+p2
 ```
 
 ***
 
-(Need to find a way to put the plots together with titles)
+This next ceptogram is of the track "Moon" from Ye's tenth studio album "Donda". It shows that Ye's style has seriously changed over the years. All dimensions of the cepstogram, except for the second (which corresponds to the track's "brightness"), seem to be pretty low. You can clearly see that there are different parts of the song with different timbres, but these aren't divided into the classic "verse-chorus" scheme like it was with Ye's earlier music. This is something that you see more often in Ye's newer tracks that there is not a clear structure to them.
 
-- The plot on the left shows the cepstogram of the single "Through The Wire" from Ye's first studio album "The College Dropout". With c01 being quite lit in comparison with the right cepstogram, it is evident that the overall loudness is greater. C02 shows that there are also some pretty "bright" parts which correspond with the choruses. Furthermore, the "strongness" of the track stays steady at an intermediate value along the entire track.
+<iframe style="border-radius:12px" src="https://open.spotify.com/embed/track/7CC6UbCs4iGsePSzFxYxNn?utm_source=generator" width="100%" height="80" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>
 
-- The second cepstogram is of the track "Moon" from Ye's tenth studio album "Donda". It shows that Ye's style has seriously changed over the years. All dimensions of the cepstogram except for the second (which corresponds to the track's "brightness") seem to be pretty low. You can clearly see that there are different parts of the song with different timbres, but these aren't divided into the classic "verse-chorus" scheme like it was with Ye's earlier music.
-
-<iframe style="border-radius:12px" src="https://open.spotify.com/embed/track/4mmkhcEm1Ljy1U9nwtsxUo?utm_source=generator" width="100%" height="80" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>
-
-### Timbre self-similarity matrix a-typical Ye song
+### Timbre Self-Similarity Matrix A-typical Ye Track
 
 ```{r}
 sight <-
@@ -264,9 +278,11 @@ sight %>%
 
 ------------------------------------------------------------------------
 
-Here you have the timbre self-similarity matrix of the track "On Sight" from one of Ye's most experimental albums "Yeezus". The track by itself is also very experimental. I would have thought that its timbre would be quite the same over the song, with the exception of a little "interlute" around 77 seconds which is very different from the rest of the song. I would have thought this would have been very clear from the self-similarity matrix so I'm surprised that I can not really find it in the matrix.
+Here you have the timbre self-similarity matrix of the track "On Sight" from one of Ye's most experimental albums "Yeezus". The track by itself is also very experimental in particular. I would have thought that its timbre would be quite the same over the song, with the exception of a little "interlude" around 77 seconds which is very different from the rest of the song. I would have thought this would have been very clear from the self-similarity matrix so I'm surprised that I can not really find it in the matrix. While the song in its entirety is very experimental, this part around 77 seconds into the song uses a sample from the chorus of “He’ll Give Us What We Really Need” by the Holy Name of Mary Choral Family. If you listen to this part of the song, It will become clear that there is no way to relate it to the rest of the song at all.
 
-### Chroma self-similarity matrix a-typical Ye song
+<iframe style="border-radius:12px" src="https://open.spotify.com/embed/track/1gqkRc9WtOpnGIqxf2Hvzr?utm_source=generator" width="100%" height="80" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>
+
+### Chroma Self-Similarity Matrix A-typical Ye Track
 
 ```{r}
 on_sight <-
@@ -301,10 +317,10 @@ compmus_long_distance(
 
 Here you have the chroma self-similarity matrix of the track "On Sight". Where in the timbre self-similarity matrix it was hard to find the "interlude" around 77 seconds, in the chroma self-similarity matrix it is a lot more evident. You can clearly see that there is a difference from the rest of the track around that time mark. There are, on the other hand, many other a-typical marks in the song which seem to be as "different" as the 77 second part. This is not what I expected because it seems like the rest of the track sounds pretty similar in comparison to that little interlude.
 
-Key and Chord Estimation {.storyboard data-navmenu="Visualizations"}
+3. Key and Chord Estimation {.storyboard data-navmenu="Analysis"}
 =========================================
 
-### Chordogram of singing vs rapping song
+### Chordogram of "Singing" Ye Track
 
 ```{r, include=FALSE}
 circshift <- function(v, n) {
@@ -447,24 +463,34 @@ chordgram_ng <- new_god %>%
   theme_minimal() +
   labs(x = "Time (s)", y = "")
 
-grid.arrange(chordgram_ff, chordgram_ng, ncol = 2, widths=c(2,2))
+chordgram_ff
 ```
 
 ***
 
-(Still need to find a way to display the two plots with titles in a way that they don't look this squeezed up)
+The plot on the left shows the chordogram of one of Ye's single, FourFiveSeconds, collaborating with Rihanna and Paul McCartney. The track is a-typical to the rest of Ye's discography in the sense that the instrumentals basically just consist of some acoustic guitar and an organ during the bridge part of the song. You can clearly see that this bridge part starts around 85 seconds using some different chords than the rest of the song. From the chordogram, E-minor and A-major are clearly chords that are being used in the bridge part of the song. For the rest of the song, it becomes harder to distinguish specific chords, but some patterns seem to be evident.
 
-- The plot on the left shows the chordogram of one of Ye's singles, FourFiveSeconds, collaborating with Rihanna and Paul McCartney. The track is a-typical to the rest of Ye's discography in the sense that the instrumentals basically just consist of some acoustic guitar and an organ during the bridge part of the song. You can clearly see that this bridge part starts around 85 seconds using some different chords than the rest of the song. From the chordogram, E-minor and A-major are clearly chords that are being used in the bridge part of the song (even though I can only display the plots squeezed up like this for now). For the rest of the song, it becomes harder to distinguish specific chords, but some patterns seem to be evident.
+<iframe style="border-radius:12px" src="https://open.spotify.com/embed/track/78TTtXnFQPzwqlbtbwqN0y?utm_source=generator" width="100%" height="80" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>
 
-- For the plot on the right, I decided to use a track that is way more "hip-hop like", consisting of way more drums and less clear chord progressions. I was wondering if it would be harder to see a clear pattern in a chordogram of a rap song like this. This seemed to be the case indeed. I couldn't find any real patterns at all here.
+### Chordogram of "Rapping" Ye Track
 
-Beat Tracking {data-navmenu="Visualizations"}
+```{r}
+chordgram_ng
+```
+
+***
+
+For the second chordgram, I decided to use the song "New God Flow", from Ye in collaboration with New York rapper Pusha T. This is a track that is way more "hip-hop like", consisting of way more drums and less clear chord progressions. I was wondering if it would be harder to see a clear pattern in a chordogram of a rap song like this. This seemed to be the case indeed. I couldn't find any real patterns at all here.
+
+<iframe style="border-radius:12px" src="https://open.spotify.com/embed/track/1DbeslBYnckTqqTcc1Y2Tg?utm_source=generator" width="100%" height="80" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>
+
+4. Beat Tracking {data-navmenu="Analysis"}
 =========================================
 
 Column {data-width=600}
 -----------------------------------------------------------------------
 
-### Tempograms of Ye track FourFiveSeconds
+### Tempograms of Ye Track FourFiveSeconds
 
 ![](tempogram_four_five.png)
 
@@ -496,17 +522,18 @@ Column {data-width=400}
 
 ### .
 
-Before implementing a spectogram to my portfolio, I wanted to get some more information about what the tracks were in my corpus with the highest and the lowest tempo. I was surprised to see that, according to spotify's API, the track with the highest tempo was "FourFiveSeconds", from Ye, Rihanna and Paul McCartney. I was surprised because this is actually an outlier from the rest of the corpus since the instrumentals consist of primarilly guitar chords which seem to be played in a rather calm tempo. The tempo value given by spotify's API was around 206 bpm which is way higher than I expected. However, when I measured the tempo myself, I got to a value of 103 bpm, which is exactly half of what Spotify found. Here it seems that spotify measured the half beats as a whole, doubling the actual tempo. 
+Before implementing a spectogram to my portfolio, I wanted to get some more information about what were the tracks in my corpus with the highest and the lowest tempo. I was surprised to see that, according to spotify's API, the track with the highest tempo was "FourFiveSeconds", from Ye, Rihanna and Paul McCartney. I was surprised because this is actually an outlier from the rest of the corpus since the instrumentals consist of primarilly guitar chords which seem to be played in a rather calm tempo. The tempo value given by spotify's API was around 206 bpm which is way higher than I expected. However, when I measured the tempo myself, I got to a value of 103 bpm, which is exactly half of what Spotify found. Here it seems that spotify measured the half beats as a whole, doubling the actual tempo. 
 
-The tempogram on the left shows how the song its tempo stays around 206 bpm for the entire duration of the song (exept for one part which I will adress later on). This is when I set the parameter "cyclic" to be FALSE for the tempogram function. However, What is interesting is that the tempogram on the left shows the right tempo (around 103 bpm). For this tempogram, I set the parameter "cyclic" to be true. (EXPLAIN WHY THIS IS!)
+The tempogram on the left shows how the song its tempo stays around 206 bpm for the entire duration of the song (exept for one part which I will adress later on). This is when I set the parameter "cyclic" to be FALSE for the tempogram function. However, What is interesting is that the tempogram on the left shows the right tempo (around 103 bpm). For this tempogram, I set the parameter "cyclic" to be true. This is because with cyclic tempograms, tempi differing by a
+power of two can be identified.
 
 The other interesting thing that this tempogram shows is the part of the song from about 85 seconds to about 120 seconds. In the tempogram, it seems to be that the tempo is all over the place. There is not a clear tempo present at all. In reality, the tempo doesn't change for this part of the song, but spotify's algorithm doesn't seem to be able to actually estimate any tempo at this part. In this part, the rhythmic guitar gets replaced for an organ without any percussion. This probably makes it a lot harder for the tempo-estimation algorithm to estimate the right tempo. 
 
 
-Clustering analysis {.storyboard data-navmenu="Visualizations"}
+5. Clustering analysis {.storyboard data-navmenu="Analysis"}
 =========================================
 
-### Dendrograms
+### Dendrogram for High vs Low Tempo Ye tracks
 
 ```{r, include=FALSE}
 get_conf_mat <- function(fit) {
@@ -600,7 +627,7 @@ plot(ye_dend_colored)
 
 ***
 
-Last week we had to look at the tempo of the tracks in our corpus. This week I was interested to see whether I could extract some of the the tracks with the highest tempo, and some of the track with the lowest tempo, and see whether the clustering methods could make a clear division between the two. Unfortunately, this doesn't seem to have worked completely. The only three tracks that are clearly separated from the rest are "moon", "Pinocchio Story" and "Jesus Is Lord". I do think that it is interesting that these are in fact three of the tracks with the lowest tempo out of th corpus. These were also some of the tracks were there was no debate about the actual tempo. Many of the tracks that were labelled as having a low BPM could be interpreted as double-time, having double the tempo that spotify assigned to it. Another reason why it might be that some of the low-tempo tracks are clustered together with the high-tempo tracks is probably that there are, in fact, many other features taken into account when clustering apart from tempo. I did think that it would be interesting to see which of these features were most important for clustering certain tracks together so I also made a heatmap.
+In part 4 of my analysis, I took a look at the tempo of the tracks in my corpus. Now, I was interested to see whether I could extract some of the the tracks with the highest tempo, and some of the track with the lowest tempo, and see whether the clustering methods could make a clear division between the two. Unfortunately, this doesn't seem to have worked completely. The only three tracks that are clearly separated from the rest are "moon", "Pinocchio Story" and "Jesus Is Lord". I do think that it is interesting that these are in fact three of the tracks with the lowest tempo out of the corpus. These were also some of the tracks where there was no debate about the actual tempo. Many of the tracks that were labelled as having a low BPM could be interpreted as double-time, having double the tempo that Spotify assigned to it. Another reason why it might be that some of the low-tempo tracks are clustered together with the high-tempo tracks is probably that there are, in fact, many other features taken into account when clustering apart from tempo. I did think that it would be interesting to see which of these features were most important for clustering certain tracks together so I also made a heatmap in the following slide.
 
 ### Heatmap
 
@@ -616,3 +643,73 @@ heatmaply(
 ***
 
 Looking at this heatmap, it seems that for the three tracks that were shown in blue in the dendrogram on the last slide are most likely clustered together because of some features that have a shared high value for these three tracks. These are a key of F#/Gb, the "speechiness" and also the timbre feature c06 seems to have a relatively high value for these tracks.
+
+### Dendrogram for First vs Latest Ye Album
+```{r}
+old_vs_new <- all_ye %>%
+  filter(track.name %in% c("We Don't Care", "Graduation Day", "All Falls Down", "I'll Fly Away", "Spaceship", "Jesus Walks", "Never Let Me Down", "Get Em High", "The New Workout Plan", "Slow Jamz", "Breathe In Breath Out", "School Spirit","Two Words", "Through The Wire", "Family Business", "Last Call", "Jail", "God Breathed", "Off The Grid", "Hurricane", "Praise God", "Jonah", "Ok Ok", "Junya", "Believe What I Say", "24", "Remote Control", "Moon", "Heaven And Hell", "Donda", "Keep My Spirit Alive", "Jesus Lord", "New Again", "Tell The Vision", "Lord I Need You", "Pure Souls", "Come To Life", "No Child Left Behind"))
+
+old_new_juice <-
+  recipe(
+    track.name ~
+      danceability +
+      energy +
+      loudness +
+      speechiness +
+      acousticness +
+      instrumentalness +
+      liveness +
+      valence +
+      tempo +
+      duration +
+      C + `C#|Db` + D + `D#|Eb` +
+      E + `F` + `F#|Gb` + G +
+      `G#|Ab` + A + `A#|Bb` + B +
+      c01 + c02 + c03 + c04 + c05 + c06 +
+      c07 + c08 + c09 + c10 + c11 + c12,
+    # valence,
+    data = old_vs_new
+  ) %>%
+  step_center(all_predictors()) %>%
+  step_scale(all_predictors()) %>%
+  # step_range(all_predictors()) %>%
+  prep(old_vs_new %>% mutate(track.name = str_trunc(track.name, 40))) %>%
+  juice() %>%
+  column_to_rownames("track.name")
+
+old_new_dist <- dist(old_new_juice, method = "euclidean")
+
+hc_old_new <- hclust(old_new_dist, method = "complete")
+old_new_dend <- as.dendrogram(hc_old_new)
+old_new_dend_colored <- color_branches(old_new_dend, h = 11.5)
+plot(old_new_dend_colored)
+```
+
+***
+
+To close of my portfolio on the progression of Ye's music over the years. I wanted to have a look whether the clustering method could make a distinction between the tracks on Ye's first studio album vs the tracks on his tenth, and as of April 2022, latest official studio album. The first thing that is remarkable is how the track "No Child Left Behind" being completely separated from the rest of the tracks. However, I do agree that it is quite different from most of the other tracks, being a very engalic song, heavily relying on large organ instrumentals.
+
+<iframe style="border-radius:12px" src="https://open.spotify.com/embed/track/3hd6zLhnTlbJ8PupYt3cAI?utm_source=generator" width="100%" height="80" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>
+
+Besides this, there is a clear distinction between two groups, depicted in green and blue. It is interesting to see that almost all songs in blue (with the exception of "I'll Fly Away") are in fact from Ye's latest studio album "Donda", and therefore correctly clustered together. I also think that it is not that strange that the track "I'll Fly Away" is clustered in this group since it is a rendition of “I’ll Fly Away,” a gospel hymn that was written by Albert E. Brumley in 1929. It is well known that Ye has adapted more gospel influences in his music in the past couple of years, so the misgrouping of this track doesn't come as that much of a surprise.
+
+<iframe style="border-radius:12px" src="https://open.spotify.com/embed/track/6MgGapP3EPFm9kYUvYBTZR?utm_source=generator" width="100%" height="80" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>
+
+However, in the green cluster there are still a lot of tracks from the album "Donda" clustered together with tracks from the album "The College Dropout". This can be because of various reasons. For example, in his latest album, Ye still incorporated some songs that use his old style of sampling soul-samples for making the beats. Still, when we look at the lowest level of clustering, almost always you can see that two songs are clustered together that are both from the same album, like "The New Workout Plan" and "Slow Jamz" from The College Dropout, or "Remote Control" and "Jesus Lord" from Donda.
+
+Conclusion
+=====================================
+
+Column {data-width=500}
+-----------------------------------------------------------------------
+
+### .
+
+Whatever you think of him as a person, you can not deny the impact that Ye has had on music over the last two decades. From Kanye West, the backpack rapper, to Ye, the CEO of the billion dollar company Yeezy, he kept releasing albums, innovating his style and pushing the music industry with him. The analysis of his discography has shown that there Ye has not released one album that is exactly like one of his others, yet he has kept his sales and fame up for almost twenty years. However, all this fame over such a long period and after multiple traumatic life experiences does seem to come with a cost. We have all seen the multiple emotional breakdowns that Ye has experienced over the past decades, and this has been evident from his music as well. The positiveness of Ye's music has been declining since his first studio album all the way to his latest. Hopefully, we will be able to see more positive projects in the future, but who knows... Because from the words of Ye himself: "Name one genius that ain't crazy".
+
+Column {data-width=500}
+-----------------------------------------------------------------------
+
+### .
+
+![](donda.png)
